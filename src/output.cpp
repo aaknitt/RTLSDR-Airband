@@ -390,15 +390,14 @@ static bool output_file_ready(channel_t *channel, file_data *fdata, mix_modes mi
 	if (!fdata) {
 		return false;
 	}
-
+	timeval current_time;
+	gettimeofday(&current_time, NULL);
 	close_if_necessary(channel, fdata);
 
 	if (fdata->f) {     // still open
 		return true;
 	}
 
-	timeval current_time;
-	gettimeofday(&current_time, NULL);
 	struct tm *time;
 	if (use_localtime) {
 		time = localtime(&current_time.tv_sec);
@@ -407,12 +406,17 @@ static bool output_file_ready(channel_t *channel, file_data *fdata, mix_modes mi
 	}
 
 	char timestamp[32];
+	sprintf(timestamp,"%ld_%06ld", (long int)current_time.tv_sec, (long int)current_time.tv_usec);
+	
+	/*
 	if (strftime(timestamp, sizeof(timestamp),
 				 fdata->split_on_transmission ? "_%Y%m%d_%H%M%S" : "_%Y%m%d_%H",
 				 time) == 0) {
 		log(LOG_NOTICE, "strftime returned 0\n");
 		return false;
 	}
+	*/
+	
 
 	std::string output_dir;
 	if (fdata->dated_subdirectories) {
