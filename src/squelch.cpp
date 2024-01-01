@@ -27,6 +27,7 @@
 #include <cassert>   // assert()
 #include <stdlib.h>  // calloc()
 #include <algorithm> // min()
+#include <sys/time.h>
 
 #include "logging.h" // debug_print()
 
@@ -34,6 +35,8 @@ using namespace std;
 
 Squelch::Squelch(void)
 {
+	first_open_time.tv_sec = 0;
+	first_open_time.tv_usec = 0;
 	noise_floor_ = 5.0f;
 	set_squelch_snr_threshold(9.54f); // depends on noise_floor_, sets using_manual_level_, normal_signal_ratio_, flappy_signal_ratio_, and moving_avg_cap_
 	manual_signal_level_ = -1.0;
@@ -144,13 +147,31 @@ bool Squelch::should_process_audio(void) {
 	return ( current_state_ == OPEN || current_state_ == CLOSING );
 }
 
-bool Squelch::first_open_sample(void) const {
-	return (current_state_ != OPEN && next_state_ == OPEN);
+bool Squelch::first_open_sample(void) {
+	if (current_state_ != OPEN && next_state_ == OPEN){
+		if (first_open_time.tv_sec == 0 && first_open_time.tv_usec == 0){
+			gettimeofday(&first_open_time, NULL);
+		}
+		return true;
+	}
+	else{
+		return false;
+	}
 }
 
-bool Squelch::last_open_sample(void) const {
-	return (current_state_ == CLOSING && next_state_ == CLOSED) ||
-		   (current_state_ != LOW_SIGNAL_ABORT && next_state_ == LOW_SIGNAL_ABORT);
+timeval Squelch::get_first_open_time(void) {
+	return first_open_time;
+}
+
+bool Squelch::last_open_sample(void) {
+	if ((current_state_ == CLOSING && next_state_ == CLOSED) || (current_state_ != LOW_SIGNAL_ABORT && next_state_ == LOW_SIGNAL_ABORT)){
+		first_open_time.tv_sec = 0;
+		first_open_time.tv_usec = 0;
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool Squelch::signal_outside_filter(void) {

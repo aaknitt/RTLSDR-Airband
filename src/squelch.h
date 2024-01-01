@@ -21,6 +21,7 @@
 #define _SQUELCH_H
 
 #include <cstddef>  // size_t
+#include <sys/time.h>
 
 #ifdef DEBUG_SQUELCH
 #include <stdio.h>  // needed for debug file output
@@ -70,6 +71,7 @@ class Squelch {
 public:
 	Squelch();
 
+	timeval get_first_open_time(void);
 	void set_squelch_level_threshold(const float &level);
 	void set_squelch_snr_threshold(const float &db);
 	void set_ctcss_freq(const float &ctcss_freq, const float &sample_rate);
@@ -82,8 +84,8 @@ public:
 	bool should_filter_sample(void);
 	bool should_process_audio(void);
 
-	bool first_open_sample(void) const;
-	bool last_open_sample(void) const;
+	bool first_open_sample(void);
+	bool last_open_sample(void);
 	bool signal_outside_filter(void);
 
 	const float & noise_level(void) const;
@@ -94,6 +96,7 @@ public:
 	const size_t & flappy_count(void) const;
 	const size_t & ctcss_count(void) const;
 	const size_t & no_ctcss_count(void) const;
+	
 
 #ifdef DEBUG_SQUELCH
 	~Squelch(void);
@@ -113,7 +116,8 @@ private:
 		float full_;
 		float capped_;
 	};
-
+	
+	timeval first_open_time;
 	float noise_floor_;			// noise level
 	bool using_manual_level_;	// if using a manually set signal level threshold
 	float manual_signal_level_;	// manually configured squelch level, < 0 for disabled

@@ -406,7 +406,9 @@ static bool output_file_ready(channel_t *channel, file_data *fdata, mix_modes mi
 	}
 
 	char timestamp[32];
-	sprintf(timestamp,"%ld_%06ld", (long int)current_time.tv_sec, (long int)current_time.tv_usec);
+	//sprintf(timestamp,"%ld_%06ld", (long int)current_time.tv_sec, (long int)current_time.tv_usec);
+	timeval temp_time = channel->freqlist->squelch.get_first_open_time();
+	sprintf(timestamp,"%ld_%06ld",(long int)temp_time.tv_sec, (long int)temp_time.tv_usec);
 	
 	/*
 	if (strftime(timestamp, sizeof(timestamp),
